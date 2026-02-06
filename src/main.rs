@@ -3,9 +3,11 @@ use std::net::{TcpListener, TcpStream};
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6380").unwrap();
+    println!("Listening for a Connection....");
     for stream in listener.incoming() {
         match stream {
             Ok(mut stream) => {
+                println!("Accepted a new connection");
                 handle_connection(&mut stream);
             }
             Err(e) => {
@@ -15,22 +17,23 @@ fn main() {
     }
 }
 
-fn handle_connection(stream: &mut TcpStream) {
+fn handle_connection(stream: &mut TcpStream){
     let mut buffer = [0; 512];
-    loop {
-        let n = match stream.read(&mut buffer) {
-            Ok(0) => break,
-            Ok(n) => n,
-            Err(_) => break,
-        };
-
-        let request = String::from_utf8_lossy(&buffer[..n]);
-        let response = if request.contains("PING") {
-            "+PONG\r\n"
-        } else {
-            "+OK\r\n"
-        };
-        stream.write_all(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
+    loop{
+        match stream.read(&mut buffer){
+            Ok(size) if size != 0 =>{
+                let response = "+PONG\r\n";
+                stream.write(response.as_bytes()).unwrap();
+                stream.flush().unwrap();                
+            }
+            Ok(_) => {
+                println!("Connection Closed");
+                break;
+            }
+            Err(e) => {
+                println!("Error: {}",e);
+                break;
+            }
+        }
     }
 }
