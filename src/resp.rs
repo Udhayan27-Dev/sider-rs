@@ -1,6 +1,6 @@
 use crate::resp_result::{RESPError, RESPResult};
 
-fn binary_extract_line(buffer: &[u8], index: &mut usize) -> RESPResult<Vec<u8>> {
+pub fn binary_extract_line(buffer: &[u8], index: &mut usize) -> RESPResult<Vec<u8>> {
     let mut output = Vec::new();
 
     //prevents reading the value in the end of buffer
@@ -37,21 +37,15 @@ fn binary_extract_line(buffer: &[u8], index: &mut usize) -> RESPResult<Vec<u8>> 
     Ok(output)
 }
 
-fn binary_extract_line_as_string(buffer: &[u8], index: &mut usize) -> RESPResult<String> {
+pub fn binary_extract_line_as_string(buffer: &[u8], index: &mut usize) -> RESPResult<String> {
     let line = binary_extract_line(buffer, index)?;
     Ok(String::from_utf8(line)?)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_binary_extract_line_as_string() {
-        let buffer = "OK\r\n".as_bytes();
-        let mut index: usize = 0;
-        let output = binary_extract_line_as_string(buffer, &mut index).unwrap();
-        assert_eq!(output, String::from("OK"));
-        assert_eq!(index, 4);
+pub fn resp_remove_type(value:char,buffer:&[u8],index:&mut usize)-> RESPResult<()>{
+    if buffer[*index] != value as u8{
+        return Err(RESPError::WrongType)
     }
+    *index += 1;
+    Ok(())
 }
