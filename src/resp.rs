@@ -1,5 +1,10 @@
 use crate::resp_result::{RESPError, RESPResult};
 
+#[derive(Debug,PartialEq)]
+pub enum RESP{
+    SimpleString(String),
+}
+
 pub fn binary_extract_line(buffer: &[u8], index: &mut usize) -> RESPResult<Vec<u8>> {
     let mut output = Vec::new();
 
@@ -48,4 +53,10 @@ pub fn resp_remove_type(value:char,buffer:&[u8],index:&mut usize)-> RESPResult<(
     }
     *index += 1;
     Ok(())
+}
+
+fn parse_simple_string(buffer:&[u8],index:&mut usize ) -> RESPResult<RESP>{
+    resp_remove_type('+',buffer,index)?;
+    let line: String = binary_extract_line_as_string(buffer, index)?;
+    Ok(RESP::SimpleString(line))
 }
